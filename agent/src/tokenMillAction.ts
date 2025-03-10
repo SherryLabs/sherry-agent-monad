@@ -6,7 +6,7 @@ import {
     type Action,
 } from "@elizaos/core";
 import { elizaLogger } from "@elizaos/core";
-import { parseAbi, encodeAbiParameters, createWalletClient } from 'viem';
+import { parseAbi, encodeAbiParameters, createWalletClient, createClient } from 'viem';
 import { handleTokenParameters, formatTokenDetails, TokenParameters } from "./utils/tokenUtils";
 
 //const walletClient = createWalletClient();
@@ -132,12 +132,61 @@ export const createTokenAndMarketAction: Action = {
     ]
 };
 
-// Placeholder for actual token deployment functionality
 async function deployToken(factoryAddress: string, parameters: any): Promise<{tokenAddress: string, marketAddress: string}> {
-    // This would actually call the blockchain in a real implementation
-    // For this example, we're just returning placeholder values
-    return {
-        tokenAddress: `0x${Math.random().toString(16).substring(2, 42)}`,
-        marketAddress: `0x${Math.random().toString(16).substring(2, 42)}`,
-    };
+    try {
+
+        // Get wallet client and public client from hardhat
+        const [walletClient] = await createClient;
+        const publicClient = await hre.viem.getPublicClient();
+        
+        // TokenMill factory ABI for the createMarketAndToken function
+        const abi = parseAbi([
+            'function createMarketAndToken((uint96 tokenType, string name, string symbol, address quoteToken, uint256 totalSupply, uint16 creatorShare, uint16 stakingShare, uint256[] bidPrices, uint256[] askPrices, bytes args) parameters) external returns (address baseToken, address market)'
+        ]);
+        
+        // Validate price arrays
+        if (parameters.bidPrices.length !== parameters.askPrices.length || 
+            parameters.bidPrices.length < 2 || 
+            parameters.bidPrices.length > 101) {
+            throw new Error('Price arrays have invalid length.');
+        }
+        
+        elizaLogger.info('Simulating createMarketAndToken to get expected return values...');
+        
+        // First simulate the contract call to get the return values
+        const { result, request } = await publicClient.simulateContract({
+            address: factoryAddress as `0x${string}`,
+            abi,
+            functionName: 'createMarketAndToken',
+            args: [parameters],
+            account: walletClient.account,
+        });
+        
+        // Extract the expected return values from simulation
+        const expectedToken = result[0];
+        const expectedMarket = result[1];
+        
+        elizaLogger.info(`Expected Token Address: ${expectedToken}`);
+        elizaLogger.info(`Expected Market Address: ${expectedMarket}`);
+        
+        // Execute the actual transaction
+        elizaLogger.info('Executing token deployment transaction...');
+        const tx = await walletClient.writeContract(request);
+        
+        elizaLogger.info(`Transaction sent: ${tx}`);
+        const receipt = await publicClient.waitForTransactionReceipt({ hash: tx });
+        elizaLogger.info(`Transaction confirmed in block ${receipt.blockNumber}`);
+        
+        return { 
+            tokenAddress: expectedToken,
+            marketAddress: expectedMarket
+        };
+    } catch (error: any) {
+        elizaLogger.error('Token deployment error:', error);
+        if (error.cause) {
+            elizaLogger.error('Error details:', error.cause);
+        }
+        throw new Error(`Failed to deploy token: ${error.message || 'Unknown error'}`);
+    }
 }
+
