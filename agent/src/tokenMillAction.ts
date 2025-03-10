@@ -11,7 +11,6 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { handleTokenParameters, formatTokenDetails, TokenParameters } from "./utils/tokenUtils";
 import { monadTestnet } from "./utils/monadChain";
 
-
 export const createTokenAndMarketAction: Action = {
     name: "CREATE_TOKEN",
     similes: ["DEPLOY_TOKEN", "CREATE_ERC20"],
@@ -50,9 +49,9 @@ export const createTokenAndMarketAction: Action = {
 
         // Environment variables
         const privateKey = process.env.EVM_PRIVATE_KEY;
-        const TMFactoryAddress = process.env.TM_FACTORY_ADDRESS || '0x501ee2D4AA611C906F785e10cC868e145183FCE4'; // Default to Monad Testnet
-        const WMONAD = process.env.WMONAD_ADDRESS || '0x760AfE86e5de5fa0Ee542fc7B7B713e1c5425701';
-
+        const TMFactoryAddress = process.env.TM_FACTORY_ADDRESS;
+        const WMONAD = process.env.WMONAD_ADDRESS;
+        
         if (!privateKey || !TMFactoryAddress || !WMONAD) {
             _callback({ text: "⚠️ Missing environment variables. Please check the configuration." });
             return false;
@@ -200,7 +199,7 @@ async function deployToken(factoryAddress: string, parameters: any): Promise<{ t
             tokenAddress: expectedToken,
             marketAddress: expectedMarket
         };
-        
+
     } catch (error: any) {
         elizaLogger.error('Token deployment error:', error);
         if (error.cause) {
