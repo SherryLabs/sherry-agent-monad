@@ -6,10 +6,11 @@ import {
     type Action,
 } from "@elizaos/core";
 import { elizaLogger } from "@elizaos/core";
-import { parseAbi, encodeAbiParameters, createWalletClient, createClient } from 'viem';
+import { parseAbi, encodeAbiParameters, createWalletClient, createClient, createPublicClient, http } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts'
 import { handleTokenParameters, formatTokenDetails, TokenParameters } from "./utils/tokenUtils";
+import { monadTestnet } from "./utils/monadChain";
 
-//const walletClient = createWalletClient();
 
 export const createTokenAndMarketAction: Action = {
     name: "CREATE_TOKEN",
@@ -19,7 +20,7 @@ export const createTokenAndMarketAction: Action = {
     validate: async (_agent: IAgentRuntime, _memory: Memory, _state?: State) => {
         // Extract token parameters from user message
         const tokenParams = handleTokenParameters(_memory.content.text);
-        
+
         if (!tokenParams) return false;
 
         if (_state) {
@@ -31,16 +32,16 @@ export const createTokenAndMarketAction: Action = {
 
     handler: async (_agent: IAgentRuntime, _memory: Memory, _state?: State, _options?: any, _callback?: HandlerCallback) => {
         if (!_callback) throw new Error("Callback is required");
-        
+
         // Get the token parameters, explicitly handle the null case
         let tokenParams: TokenParameters | null = null;
-        
+
         if (_state?.tokenParams) {
             tokenParams = _state.tokenParams as TokenParameters;
         } else {
             tokenParams = handleTokenParameters(_memory.content.text);
         }
-        
+
         // Check if tokenParams is null or undefined
         if (!tokenParams) {
             _callback({ text: "❌ Unable to extract token parameters from your request. Please provide details like name, symbol, and supply." });
@@ -62,7 +63,7 @@ export const createTokenAndMarketAction: Action = {
 
             // Initialize blockchain service for token deployment
             const { name, symbol, totalSupply, decimals, creatorShare, stakingShare } = tokenParams;
-            
+
             _callback({ text: `📝 Preparing token with name: ${name}, symbol: ${symbol}, supply: ${totalSupply}` });
 
             // Prepare token parameters
@@ -85,15 +86,15 @@ export const createTokenAndMarketAction: Action = {
                 // In a real implementation, you would integrate with Hardhat or another library
                 // to deploy the token. This is a simplified placeholder.
                 const result = await deployToken(TMFactoryAddress, parameters);
-                
-                _callback({ 
-                    text: `✅ Token deployed successfully!\n\n` + 
-                          `📋 Token Details:\n` +
-                          `- Name: ${name}\n` +
-                          `- Symbol: ${symbol}\n` +
-                          `- Contract: ${result.tokenAddress}\n` +
-                          `- Market: ${result.marketAddress}\n\n` +
-                          `You can now interact with your token using the mini-app at: https://tokenmill.xyz/tokens/${result.tokenAddress}`
+
+                _callback({
+                    text: `✅ Token deployed successfully!\n\n` +
+                        `📋 Token Details:\n` +
+                        `- Name: ${name}\n` +
+                        `- Symbol: ${symbol}\n` +
+                        `- Contract: ${result.tokenAddress}\n` +
+                        `- Market: ${result.marketAddress}\n\n` +
+                        `You can now interact with your token using the mini-app at: https://tokenmill.xyz/tokens/${result.tokenAddress}`
                 });
                 return true;
             } catch (error: any) {
@@ -132,27 +133,45 @@ export const createTokenAndMarketAction: Action = {
     ]
 };
 
-async function deployToken(factoryAddress: string, parameters: any): Promise<{tokenAddress: string, marketAddress: string}> {
+async function deployToken(factoryAddress: string, parameters: any): Promise<{ tokenAddress: string, marketAddress: string }> {
     try {
 
-        // Get wallet client and public client from hardhat
-        const [walletClient] = await createClient;
-        const publicClient = await hre.viem.getPublicClient();
-        
+        const privateKey = process.env.EVM_PRIVATE_KEY;
+
+        if (!privateKey) {
+            throw new Error('EVM_PRIVATE_KEY environment variable is missing.');
+        }
+
+        // create account from private key
+        const account = privateKeyToAccount(privateKey as `0x${string}`);
+
+        // Init wallet client from account
+        const walletClient = createWalletClient({
+            account,
+            chain: monadTestnet,
+            transport: http()
+        });
+
+        // Init public client
+        const publicClient = await createPublicClient({
+            chain: monadTestnet,
+            transport: http()
+        });
+
         // TokenMill factory ABI for the createMarketAndToken function
         const abi = parseAbi([
             'function createMarketAndToken((uint96 tokenType, string name, string symbol, address quoteToken, uint256 totalSupply, uint16 creatorShare, uint16 stakingShare, uint256[] bidPrices, uint256[] askPrices, bytes args) parameters) external returns (address baseToken, address market)'
         ]);
-        
+
         // Validate price arrays
-        if (parameters.bidPrices.length !== parameters.askPrices.length || 
-            parameters.bidPrices.length < 2 || 
+        if (parameters.bidPrices.length !== parameters.askPrices.length ||
+            parameters.bidPrices.length < 2 ||
             parameters.bidPrices.length > 101) {
             throw new Error('Price arrays have invalid length.');
         }
-        
+
         elizaLogger.info('Simulating createMarketAndToken to get expected return values...');
-        
+
         // First simulate the contract call to get the return values
         const { result, request } = await publicClient.simulateContract({
             address: factoryAddress as `0x${string}`,
@@ -161,26 +180,27 @@ async function deployToken(factoryAddress: string, parameters: any): Promise<{to
             args: [parameters],
             account: walletClient.account,
         });
-        
+
         // Extract the expected return values from simulation
         const expectedToken = result[0];
         const expectedMarket = result[1];
-        
+
         elizaLogger.info(`Expected Token Address: ${expectedToken}`);
         elizaLogger.info(`Expected Market Address: ${expectedMarket}`);
-        
+
         // Execute the actual transaction
         elizaLogger.info('Executing token deployment transaction...');
         const tx = await walletClient.writeContract(request);
-        
+
         elizaLogger.info(`Transaction sent: ${tx}`);
         const receipt = await publicClient.waitForTransactionReceipt({ hash: tx });
         elizaLogger.info(`Transaction confirmed in block ${receipt.blockNumber}`);
-        
-        return { 
+
+        return {
             tokenAddress: expectedToken,
             marketAddress: expectedMarket
         };
+        
     } catch (error: any) {
         elizaLogger.error('Token deployment error:', error);
         if (error.cause) {
