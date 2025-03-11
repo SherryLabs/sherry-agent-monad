@@ -1,11 +1,12 @@
+import { elizaLogger } from '@elizaos/core'
 import { createClient } from '@supabase/supabase-js'
 
 const url = process.env.SUPABASE_URL
-const apiKey = process.env.API_KEY
+const apiKey = process.env.SUPABASE_ANON_KEY
 const bucketName = process.env.BUCKET_NAME
 
-if(!url || !apiKey) { 
-    throw new Error('Missing environment variables')
+if(!url || !apiKey || !bucketName) { 
+    throw new Error('⚠️ Missing environment variables')
 }
 
 // Create Supabase client
@@ -35,7 +36,7 @@ export async function uploadFile(fileContent: File | Blob | string, filePath: st
 }
 
 // Convert metadata to a file and upload it
-export async function uploadMetadataAsFile(metadata: string, fileName: string, bucketName: string = 'bucket_name') {
+export async function uploadMetadataAsFile(metadata: string, fileName: string) {
   try {
     // Upload the metadata string directly
     const data = await uploadFile(metadata, fileName, bucketName);
@@ -149,14 +150,16 @@ export const generateMetadata = async (tokenName: string, tokenAddress: string, 
     return metadata;
 }
 
-export async function example(tokenName: string, tokenAddress: string) {    
+export async function processMetadata(tokenName: string, tokenAddress: string) {    
     // Generate metadata JSON string
     const metadata = await generateMetadata(tokenName, tokenAddress);
     
     // Upload the metadata as a file
     const fileName = `metadata_${tokenAddress}.json`;
-    const result = await uploadMetadataAsFile(metadata, fileName, 'your_bucket_name');
+    const result = await uploadMetadataAsFile(metadata, fileName);
     
-    console.log('Metadata uploaded successfully:', result.publicUrl);
+    elizaLogger.info('Metadata uploaded successfully:', result.publicUrl);
+
+    return result.publicUrl;
   }
 

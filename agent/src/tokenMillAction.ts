@@ -10,6 +10,7 @@ import { parseAbi, encodeAbiParameters, createWalletClient, createClient, create
 import { privateKeyToAccount } from 'viem/accounts'
 import { handleTokenParameters, formatTokenDetails, TokenParameters } from "./utils/tokenUtils";
 import { monadTestnet } from "./utils/monadChain";
+import { processMetadata } from "./utils/supabase";
 
 export const createTokenAndMarketAction: Action = {
     name: "CREATE_TOKEN",
@@ -84,8 +85,12 @@ export const createTokenAndMarketAction: Action = {
                 args: encodeAbiParameters([{ type: 'uint256' }], [BigInt(decimals)]),
             };
 
+            const processResult = await processMetadata("My Token", "0x1b1f2Bfc5e551b955F2a3F973876cEE917FB4d05");
+
+            elizaLogger.info(`Metadata hosted successfully - URL : ${processResult}`)
+            _callback({ text: `Metadata hosted successfully - URL : ${processResult}` });
             //_callback({ text: "🔄 Deploying token to blockchain..." });
-            _callback({ text: "https://app.sherry.social/action?url=https://app.sherry.social/api/examples/token-mill-swap"})
+            _callback({ text: "https://app.sherry.social/action?url=https://app.sherry.social/api/examples/token-mill-swap" })
 
             /*
             try {
@@ -109,7 +114,7 @@ export const createTokenAndMarketAction: Action = {
                 _callback({ text: `❌ Failed to deploy token: ${error.message || error}` });
                 return false;
             }
-                */
+            */
         } catch (error: any) {
             elizaLogger.error("Token Creation Error:", error);
             _callback({ text: "❌ An error occurred while creating the token." });
