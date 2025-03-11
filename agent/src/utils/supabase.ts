@@ -1,5 +1,6 @@
 import { elizaLogger } from '@elizaos/core'
 import { createClient } from '@supabase/supabase-js'
+import { Database, Tables, InsertTables, UpdateTables } from './database.types'
 
 const url = process.env.SUPABASE_URL
 const apiKey = process.env.SUPABASE_ANON_KEY
@@ -10,7 +11,83 @@ if(!url || !apiKey || !bucketName) {
 }
 
 // Create Supabase client
-const supabase = createClient(url, apiKey)
+const supabase = createClient<Database>(url, apiKey)
+
+// Applications table operations
+export const applicationsTable = {
+  async getAll() {
+    const { data, error } = await supabase
+      .from('applications')
+      .select('*');
+    
+    if (error) {
+      elizaLogger.error('Error fetching applications:', error);
+      throw error;
+    }
+    
+    return data as Tables<'applications'>[];
+  },
+  
+  async getById(id: string) {
+    const { data, error } = await supabase
+      .from('applications')
+      .select('*')
+      .eq('id_application', id)
+      .single();
+    
+    if (error) {
+      elizaLogger.error(`Error fetching application with ID ${id}:`, error);
+      throw error;
+    }
+    
+    return data as Tables<'applications'>;
+  },
+  
+  async insert(application: InsertTables<'applications'>) {
+    const { data, error } = await supabase
+      .from('applications')
+      .insert(application)
+      .select()
+      .single();
+    
+    if (error) {
+      elizaLogger.error('Error inserting application:', error);
+      throw error;
+    }
+    
+    return data as Tables<'applications'>;
+  },
+  
+  async update(id: string, updates: UpdateTables<'applications'>) {
+    const { data, error } = await supabase
+      .from('applications')
+      .update(updates)
+      .eq('id_application', id)
+      .select()
+      .single();
+    
+    if (error) {
+      elizaLogger.error(`Error updating application with ID ${id}:`, error);
+      throw error;
+    }
+    
+    return data as Tables<'applications'>;
+  },
+  
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('applications')
+      .delete()
+      .eq('id_application', id);
+    
+    if (error) {
+      elizaLogger.error(`Error deleting application with ID ${id}:`, error);
+      throw error;
+    }
+    
+    return true;
+  }
+};
 
 // Upload file using standard upload
 export async function uploadFile(fileContent: File | Blob | string, filePath: string, bucketName: string = 'bucket_name') {
