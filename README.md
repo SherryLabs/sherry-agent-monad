@@ -23,6 +23,18 @@ WMONAD_ADDRESS=wrapped_monad_address
 # Database Configuration (Supabase)
 SUPABASE_URL=your_supabase_url
 SUPABASE_KEY=your_supabase_key
+
+# Anthropic API Configuration
+ANTHROPIC_API_KEY=your_anthropic_api_key
+SMALL_ANTHROPIC_MODEL=claude-3-haiku-20240307
+MEDIUM_ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
+LARGE_ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
+
+# Twitter Account Configuration
+TWITTER_USERNAME=your_twitter_username
+TWITTER_PASSWORD=your_twitter_password
+TWITTER_EMAIL=your_twitter_email
+TWITTER_2FA_SECRET=your_twitter_2fa_secret
 ```
 
 ## Available Actions
