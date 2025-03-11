@@ -92,6 +92,8 @@ export async function uploadMetadataAsFile(metadata: string, fileName: string) {
     }
 }
 
+const getDeadline = () => BigInt(Math.floor(Date.now() / 1000) + 3600);
+
 export const generateMetadata = async (tokenName: string, tokenAddress: string, proxyAddress: string) => {
     let metadata = `
     {
@@ -151,7 +153,7 @@ export const generateMetadata = async (tokenName: string, tokenAddress: string, 
                     "sender",
                     100000000000000000,
                     0,
-                    1741704787,
+                    "${Number(getDeadline().toString())}",
                     "sender"
                 ],
                 "params": [
@@ -192,8 +194,11 @@ export async function processMetadata(tokenName: string, tokenAddress: string, p
     // Generate metadata JSON string
     const metadata = await generateMetadata(tokenName, tokenAddress, proxyAddress);
 
+    // Get the last 10 characters of the tokenAddress
+    const shortTokenAddress = tokenAddress.slice(-10);
+
     // Upload the metadata as a file to Supabase Storage
-    const fileName = `metadata_${tokenAddress}.json`;
+    const fileName = `metadata_${shortTokenAddress}.json`;
     const result = await uploadMetadataAsFile(metadata, fileName);
 
     elizaLogger.info('Metadata uploaded successfully:', result.publicUrl);
