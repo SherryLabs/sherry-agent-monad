@@ -10,7 +10,8 @@ import { parseAbi, encodeAbiParameters, createWalletClient, createClient, create
 import { privateKeyToAccount } from 'viem/accounts'
 import { handleTokenParameters, formatTokenDetails, TokenParameters } from "./utils/tokenUtils";
 import { monadTestnet } from "./utils/monadChain";
-import { processMetadata } from "./utils/supabase";
+import { processMetadata, insertApplication } from "./utils/supabase";
+import { Application } from "./interface/Applications";
 
 export const createTokenAndMarketAction: Action = {
     name: "CREATE_TOKEN",
@@ -85,13 +86,29 @@ export const createTokenAndMarketAction: Action = {
                 args: encodeAbiParameters([{ type: 'uint256' }], [BigInt(decimals)]),
             };
 
-            const processResult = await processMetadata("My Token", "0x1b1f2Bfc5e551b955F2a3F973876cEE917FB4d05");
+            const processResult = await processMetadata(name, "0x1b1f2Bfc5e551b955F2a3F973876cEE917FB4d05");
 
             elizaLogger.info(`Metadata hosted successfully - URL : ${processResult}`)
             _callback({ text: `Metadata hosted successfully - URL : ${processResult}` });
             //_callback({ text: "🔄 Deploying token to blockchain..." });
-            _callback({ text: "https://app.sherry.social/action?url=https://app.sherry.social/api/examples/token-mill-swap" })
+            //_callback({ text: "https://app.sherry.social/action?url=https://app.sherry.social/api/examples/token-mill-swap" })
 
+            let app: Application = {
+                api_url: processResult,
+                email: "gilberts@sherry.social",
+                explanation: `Buy Tokens deployed on Token Mill`,
+                name: `Simplify the way users buy tokens`,
+                project_name: "Monad AI Agent",
+                state: "approved",
+                telegram: "@gilbertsahumada",
+                twitter: "@gilbertsahumada",
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+            }
+
+            const result = await insertApplication(app);
+
+            _callback({ text: `✅ Token deployed successfully! ID : ${result.id_application}` })
             /*
             try {
                 // In a real implementation, you would integrate with Hardhat or another library
@@ -222,4 +239,6 @@ async function deployToken(factoryAddress: string, parameters: any): Promise<{ t
         throw new Error(`Failed to deploy token: ${error.message || 'Unknown error'}`);
     }
 }
+
+
 
