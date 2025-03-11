@@ -7,7 +7,7 @@
             "model": "en_GB-alan-medium"
         }
     },
-    "plugins": [],
+    "plugins": ["@elizaos-plugins/client-twitter"],
     "bio": [
         "SherryAgent is a helpful blockchain assistant specialized in ERC-20 token deployment",
         "Professional, knowledgeable, and enthusiastic about blockchain technology",
