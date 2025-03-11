@@ -17,10 +17,14 @@ export const createTokenAndMarketAction: Action = {
     description: "Create and deploy a new ERC-20 token with TokenMill",
 
     validate: async (_agent: IAgentRuntime, _memory: Memory, _state?: State) => {
-        // Extract token parameters from user message
+        // Extract token parameters from user message - primarily name and symbol
         const tokenParams = handleTokenParameters(_memory.content.text);
+        elizaLogger.info("Catching token params")
 
         if (!tokenParams) return false;
+
+        elizaLogger.info("Token params catched")
+        elizaLogger.info(tokenParams)
 
         if (_state) {
             _state.tokenParams = tokenParams;
@@ -43,7 +47,7 @@ export const createTokenAndMarketAction: Action = {
 
         // Check if tokenParams is null or undefined
         if (!tokenParams) {
-            _callback({ text: "❌ Unable to extract token parameters from your request. Please provide details like name, symbol, and supply." });
+            _callback({ text: "❌ Unable to extract token name from your request. Please provide a name for your token." });
             return false;
         }
 
@@ -51,7 +55,7 @@ export const createTokenAndMarketAction: Action = {
         const privateKey = process.env.EVM_PRIVATE_KEY;
         const TMFactoryAddress = process.env.TM_FACTORY_ADDRESS;
         const WMONAD = process.env.WMONAD_ADDRESS;
-        
+
         if (!privateKey || !TMFactoryAddress || !WMONAD) {
             _callback({ text: "⚠️ Missing environment variables. Please check the configuration." });
             return false;
@@ -60,14 +64,15 @@ export const createTokenAndMarketAction: Action = {
         try {
             _callback({ text: "🚀 Starting token creation process with TokenMill..." });
 
-            // Initialize blockchain service for token deployment
+            // Initialize token deployment with extracted name and symbol
+            // Other parameters are using default values
             const { name, symbol, totalSupply, decimals, creatorShare, stakingShare } = tokenParams;
 
             _callback({ text: `📝 Preparing token with name: ${name}, symbol: ${symbol}, supply: ${totalSupply}` });
 
             // Prepare token parameters
             const parameters = {
-                tokenType: 1n, // ERC20
+                tokenType: 1n, // ERC20 as far as I know :p
                 name: name,
                 symbol: symbol,
                 quoteToken: WMONAD as `0x${string}`,
@@ -81,6 +86,7 @@ export const createTokenAndMarketAction: Action = {
 
             _callback({ text: "🔄 Deploying token to blockchain..." });
 
+            /*
             try {
                 // In a real implementation, you would integrate with Hardhat or another library
                 // to deploy the token. This is a simplified placeholder.
@@ -95,12 +101,14 @@ export const createTokenAndMarketAction: Action = {
                         `- Market: ${result.marketAddress}\n\n` +
                         `You can now interact with your token using the mini-app at: https://tokenmill.xyz/tokens/${result.tokenAddress}`
                 });
+
                 return true;
             } catch (error: any) {
                 elizaLogger.error("Token Deployment Error:", error);
                 _callback({ text: `❌ Failed to deploy token: ${error.message || error}` });
                 return false;
             }
+                */
         } catch (error: any) {
             elizaLogger.error("Token Creation Error:", error);
             _callback({ text: "❌ An error occurred while creating the token." });
