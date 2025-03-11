@@ -12,6 +12,9 @@ import { handleTokenParameters, formatTokenDetails, TokenParameters } from "./ut
 import { monadTestnet } from "./utils/monadChain";
 import { processMetadata, insertApplication } from "./utils/supabase";
 import { Application } from "./interface/Applications";
+import { encodeSwapRoute } from "./utils/tokenUtils";
+
+const SHERRY_URL_PREFIX = 'https://app.sherry.social/action?url='
 
 export const createTokenAndMarketAction: Action = {
     name: "CREATE_TOKEN",
@@ -56,6 +59,7 @@ export const createTokenAndMarketAction: Action = {
         // Environment variables
         const privateKey = process.env.EVM_PRIVATE_KEY;
         const TMFactoryAddress = process.env.TM_FACTORY_ADDRESS;
+        const TMProxyAddress = process.env.TM_PROXY_ADDRESS;
         const WMONAD = process.env.WMONAD_ADDRESS;
 
         if (!privateKey || !TMFactoryAddress || !WMONAD) {
@@ -72,47 +76,22 @@ export const createTokenAndMarketAction: Action = {
 
             _callback({ text: `📝 Preparing token with name: ${name}, symbol: ${symbol}, supply: ${totalSupply}` });
 
-            // Prepare token parameters
-            const parameters = {
-                tokenType: 1n, // ERC20 as far as I know :p
-                name: name,
-                symbol: symbol,
-                quoteToken: WMONAD as `0x${string}`,
-                totalSupply: BigInt(totalSupply) * BigInt(10 ** decimals),
-                creatorShare: creatorShare * 100, // Convert percentage to BPS
-                stakingShare: stakingShare * 100, // Convert percentage to BPS
-                bidPrices: [0n, 9800000000000000n, 9900000000000000n],
-                askPrices: [0n, 9900000000000000n, 10000000000000000n],
-                args: encodeAbiParameters([{ type: 'uint256' }], [BigInt(decimals)]),
-            };
-
-            const processResult = await processMetadata(name, "0x1b1f2Bfc5e551b955F2a3F973876cEE917FB4d05");
-
-            elizaLogger.info(`Metadata hosted successfully - URL : ${processResult}`)
-            _callback({ text: `Metadata hosted successfully - URL : ${processResult}` });
-            //_callback({ text: "🔄 Deploying token to blockchain..." });
-            //_callback({ text: "https://app.sherry.social/action?url=https://app.sherry.social/api/examples/token-mill-swap" })
-
-            let app: Application = {
-                api_url: processResult,
-                email: "gilberts@sherry.social",
-                explanation: `Buy Tokens deployed on Token Mill`,
-                name: `Simplify the way users buy tokens`,
-                project_name: "Monad AI Agent",
-                state: "approved",
-                telegram: "@gilbertsahumada",
-                twitter: "@gilbertsahumada",
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-            }
-
-            const result = await insertApplication(app);
-
-            _callback({ text: `✅ Token deployed successfully! ID : ${result.id_application}` })
-            /*
             try {
-                // In a real implementation, you would integrate with Hardhat or another library
-                // to deploy the token. This is a simplified placeholder.
+
+                // Prepare token parameters
+                const parameters = {
+                    tokenType: 1n, // ERC20 as far as I know :p
+                    name: name,
+                    symbol: symbol,
+                    quoteToken: WMONAD as `0x${string}`,
+                    totalSupply: BigInt(totalSupply) * BigInt(10 ** decimals),
+                    creatorShare: creatorShare * 100, // Convert percentage to BPS
+                    stakingShare: stakingShare * 100, // Convert percentage to BPS
+                    bidPrices: [0n, 9800000000000000n, 9900000000000000n],
+                    askPrices: [0n, 9900000000000000n, 10000000000000000n],
+                    args: encodeAbiParameters([{ type: 'uint256' }], [BigInt(decimals)]),
+                };
+
                 const result = await deployToken(TMFactoryAddress, parameters);
 
                 _callback({
@@ -122,8 +101,31 @@ export const createTokenAndMarketAction: Action = {
                         `- Symbol: ${symbol}\n` +
                         `- Contract: ${result.tokenAddress}\n` +
                         `- Market: ${result.marketAddress}\n\n` +
-                        `You can now interact with your token using the mini-app at: https://tokenmill.xyz/tokens/${result.tokenAddress}`
+                        `You can now interact with your token using the mini-app at: https://pandaria.tokenmill.xyz/monad/${result.tokenAddress}`
                 });
+
+                const encodedAddress = encodeSwapRoute(result.tokenAddress);
+                const urlHostedMetadata = await processMetadata(name, encodedAddress, TMProxyAddress);
+
+                elizaLogger.info(`Metadata hosted successfully - URL : ${urlHostedMetadata}`)
+                //_callback({ text: `Metadata hosted successfully - URL : ${processResult}` });
+
+                let app: Application = {
+                    api_url: urlHostedMetadata,
+                    email: "gilberts@sherry.social",
+                    explanation: `Buy Tokens deployed on Token Mill`,
+                    name: `Simplify the way users buy tokens`,
+                    project_name: "Monad AI Agent",
+                    state: "approved",
+                    telegram: "@gilbertsahumada",
+                    twitter: "@gilbertsahumada",
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                }
+
+                const insertedApp = await insertApplication(app);
+
+                _callback({ text: `✅ Here is the sherry link to sell your token : ${SHERRY_URL_PREFIX}${urlHostedMetadata}` })
 
                 return true;
             } catch (error: any) {
@@ -131,7 +133,7 @@ export const createTokenAndMarketAction: Action = {
                 _callback({ text: `❌ Failed to deploy token: ${error.message || error}` });
                 return false;
             }
-            */
+
         } catch (error: any) {
             elizaLogger.error("Token Creation Error:", error);
             _callback({ text: "❌ An error occurred while creating the token." });
@@ -143,7 +145,7 @@ export const createTokenAndMarketAction: Action = {
         [
             {
                 user: "{{user1}}",
-                content: { text: "Can you create an ERC-20 token for me called 'DenverCoin' with symbol 'DEN' and total supply of 1,000,000?" }
+                content: { text: "Can you create an ERC-20 token for me called 'DenverCoin' with symbol 'DEN'?" }
             },
             {
                 user: "{{agentName}}",

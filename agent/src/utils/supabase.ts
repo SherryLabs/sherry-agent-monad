@@ -92,7 +92,7 @@ export async function uploadMetadataAsFile(metadata: string, fileName: string) {
     }
 }
 
-export const generateMetadata = async (tokenName: string, tokenAddress: string,) => {
+export const generateMetadata = async (tokenName: string, tokenAddress: string, proxyAddress: string) => {
     let metadata = `
     {
         "url": "https://tokenmill.exchange",
@@ -102,7 +102,7 @@ export const generateMetadata = async (tokenName: string, tokenAddress: string,)
         "actions": [
             {
                 "label": "Swap 0.1 MONAD for ${tokenName}",
-                "address": "${tokenAddress}",
+                "address": "${proxyAddress}",
                 "abi": [
                     {
                         "name": "swapExactIn",
@@ -147,7 +147,7 @@ export const generateMetadata = async (tokenName: string, tokenAddress: string,)
                 },
                 "amount": 0.1,
                 "paramsValue": [
-                    "0x00000000000000000000000000000000000000000300000083828b09e730aea59a83de8cb84b963a9fc604a6",
+                    "${tokenAddress}",
                     "sender",
                     100000000000000000,
                     0,
@@ -188,9 +188,9 @@ export const generateMetadata = async (tokenName: string, tokenAddress: string,)
     return metadata;
 }
 
-export async function processMetadata(tokenName: string, tokenAddress: string) {
+export async function processMetadata(tokenName: string, tokenAddress: string, proxyAddress: string) {
     // Generate metadata JSON string
-    const metadata = await generateMetadata(tokenName, tokenAddress);
+    const metadata = await generateMetadata(tokenName, tokenAddress, proxyAddress);
 
     // Upload the metadata as a file to Supabase Storage
     const fileName = `metadata_${tokenAddress}.json`;
