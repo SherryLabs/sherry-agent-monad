@@ -1,0 +1,182 @@
+{
+    "url": "https://gnpoaqmajzwjdquzhqhk.supabase.co/storage/v1/object/sign/resources/flag.jpg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJyZXNvdXJjZXMvZmxhZy5qcGciLCJpYXQiOjE3MzczMjA4OTYsImV4cCI6NDg1OTM4NDg5Nn0.jW1BTOFDs7dXL6CQysRT9q0rZ3bjElZl3sfcPjd7J5M&t=2025-01-19T21%3A08%3A16.813Z",
+    "icon": "https://gnpoaqmajzwjdquzhqhk.supabase.co/storage/v1/object/sign/resources/flag.jpg?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJyZXNvdXJjZXMvZmxhZy5qcGciLCJpYXQiOjE3MzczMjA4OTYsImV4cCI6NDg1OTM4NDg5Nn0.jW1BTOFDs7dXL6CQysRT9q0rZ3bjElZl3sfcPjd7J5M&t=2025-01-19T21%3A08%3A16.813Z",
+    "title": "Capture the flag Cross-Chain",
+    "description": "Be the Best and Capture the Flag",
+    "actions": [
+        {
+            "label": "CAPTURE FOR 0.1",
+            "address": "0x812810512193d623a68e467cc314511a581E4546",
+            "abi": [
+                {
+                    "inputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "constructor"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "player",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "timestamp",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "FlagCaptured",
+                    "type": "event"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "_participant",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "canUserParticipate",
+                    "outputs": [
+                        { "internalType": "bool", "name": "", "type": "bool" }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "_participant",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "captureFlag",
+                    "outputs": [],
+                    "stateMutability": "payable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "flagCaptureTime",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "flagHolder",
+                    "outputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "flagPrice",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "lastParticipationTime",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "owner",
+                    "outputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "_price",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "setFlagPrice",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "_newOwner",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "transferOwnership",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "withdraw",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }
+            ],
+            "functionName": "captureFlag",
+            "chains": { "source": "fuji", "destination": "alfajores" },
+            "amount": 0.1,
+            "paramsValue": ["sender"],
+            "params": [
+                {
+                    "internalType": "address",
+                    "name": "_participant",
+                    "type": "address"
+                }
+            ],
+            "blockchainActionType": "payable"
+        }
+    ]
+}

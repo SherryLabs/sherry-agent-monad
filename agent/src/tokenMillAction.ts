@@ -84,7 +84,8 @@ export const createTokenAndMarketAction: Action = {
                 args: encodeAbiParameters([{ type: 'uint256' }], [BigInt(decimals)]),
             };
 
-            _callback({ text: "🔄 Deploying token to blockchain..." });
+            //_callback({ text: "🔄 Deploying token to blockchain..." });
+            _callback({ text: "https://app.sherry.social/action?url=https://app.sherry.social/api/examples/token-mill-swap"})
 
             /*
             try {
