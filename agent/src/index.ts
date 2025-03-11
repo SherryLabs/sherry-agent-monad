@@ -19,8 +19,8 @@ import {
     validateCharacterConfig,
 } from "@elizaos/core";
 import { defaultCharacter } from "./defaultCharacter.ts";
-
 import { bootstrapPlugin } from "@elizaos/plugin-bootstrap";
+import { createTokenAndMarketAction } from "./tokenMillAction.ts";
 
 import fs from "fs";
 import net from "net";
@@ -616,6 +616,7 @@ export async function createAgent(
             .filter(Boolean),
         providers: [],
         managers: [],
+        actions: [createTokenAndMarketAction],
         fetch: logFetch,
         // verifiableInferenceAdapter,
     });
@@ -693,23 +694,23 @@ function initializeCache(
 }
 
 async function findDatabaseAdapter(runtime: AgentRuntime) {
-  const { adapters } = runtime;
-  let adapter: Adapter | undefined;
-  // if not found, default to sqlite
-  if (adapters.length === 0) {
-    const sqliteAdapterPlugin = await import('@elizaos-plugins/adapter-sqlite');
-    const sqliteAdapterPluginDefault = sqliteAdapterPlugin.default;
-    adapter = sqliteAdapterPluginDefault.adapters[0];
-    if (!adapter) {
-      throw new Error("Internal error: No database adapter found for default adapter-sqlite");
+    const { adapters } = runtime;
+    let adapter: Adapter | undefined;
+    // if not found, default to sqlite
+    if (adapters.length === 0) {
+        const sqliteAdapterPlugin = await import('@elizaos-plugins/adapter-sqlite');
+        const sqliteAdapterPluginDefault = sqliteAdapterPlugin.default;
+        adapter = sqliteAdapterPluginDefault.adapters[0];
+        if (!adapter) {
+            throw new Error("Internal error: No database adapter found for default adapter-sqlite");
+        }
+    } else if (adapters.length === 1) {
+        adapter = adapters[0];
+    } else {
+        throw new Error("Multiple database adapters found. You must have no more than one. Adjust your plugins configuration.");
     }
-  } else if (adapters.length === 1) {
-    adapter = adapters[0];
-  } else {
-    throw new Error("Multiple database adapters found. You must have no more than one. Adjust your plugins configuration.");
-    }
-  const adapterInterface = adapter?.init(runtime);
-  return adapterInterface;
+    const adapterInterface = adapter?.init(runtime);
+    return adapterInterface;
 }
 
 async function startAgent(

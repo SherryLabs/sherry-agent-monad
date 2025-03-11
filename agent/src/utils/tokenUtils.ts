@@ -7,10 +7,11 @@ import { State } from "@elizaos/core";
 export interface TokenParameters {
   name: string;
   symbol: string;
-  totalSupply: number;
-  decimals: number;
-  creatorShare: number;
-  stakingShare: number;
+  // The following parameters will use default values
+  totalSupply: number; // Default will be used
+  decimals: number;    // Default will be used
+  creatorShare: number; // Default will be used
+  stakingShare: number; // Default will be used
 }
 
 // Extend the State type to include tokenParams
@@ -22,6 +23,7 @@ declare module "@elizaos/core" {
 
 /**
  * Extract token parameters from user message with enhanced pattern matching
+ * Focus primarily on name and symbol as these are the parameters provided in chat
  * @param text User message text
  * @returns TokenParameters object or null if required parameters can't be extracted
  */
@@ -32,14 +34,16 @@ export function handleTokenParameters(text: string): TokenParameters | null {
   }
 
   try {
-    // Name extraction with multiple patterns
+    // Name extraction with multiple patterns - primary focus
     const nameMatch = text.match(/called ['"](.*?)['"]|name ['"](.*?)['"]|named ['"](.*?)['"]/) || 
                      text.match(/name[:]?\s+['"](.*?)['"]/) || 
                      text.match(/token\s+['"](.*?)['"]/) ||
                      text.match(/called\s+(\w+)/) ||
-                     text.match(/name[:]?\s+(\w+)/);
+                     text.match(/name[:]?\s+(\w+)/) ||
+                     text.match(/create\s+(\w+)/) ||
+                     text.match(/deploy\s+(\w+)/);
     
-    // Symbol extraction
+    // Symbol extraction - primary focus
     const symbolMatch = text.match(/symbol ['"](.*?)['"]|symbol[:]?\s+['"](.*?)['"]/) || 
                        text.match(/symbol[:]?\s+(\w+)/) ||
                        text.match(/ticker[:]?\s+(\w+)/) ||
@@ -47,6 +51,28 @@ export function handleTokenParameters(text: string): TokenParameters | null {
                        text.match(/with\s+symbol\s+['"](.*?)['"]/) ||
                        text.match(/with\s+symbol\s+(\w+)/);
     
+    // We'll only check for name and symbol as they're the primary chat parameters
+    if (!nameMatch) {
+      elizaLogger.debug("Token parameter extraction failed: No token name found");
+      return null;
+    }
+
+    // Extract the first captured group that isn't undefined
+    const name = (
+      nameMatch?.[1] || 
+      nameMatch?.[2] || 
+      nameMatch?.[3] || 
+      'MyToken' // Default token name
+    ).trim();
+    
+    const symbol = (
+      symbolMatch?.[1] || 
+      symbolMatch?.[2] || 
+      name.substring(0, 3).toUpperCase()
+    ).trim();
+    
+    // Comment out unused parameter extraction
+    /* 
     // Total supply extraction with optional comma formatting
     const supplyMatch = text.match(/supply\s+of\s+([0-9,.]+)/) || 
                        text.match(/supply[:]?\s+([0-9,.]+)/) ||
@@ -66,56 +92,13 @@ export function handleTokenParameters(text: string): TokenParameters | null {
     const stakingShareMatch = text.match(/staking\s+share\s+(\d+)%/) ||
                              text.match(/staking\s+share[:]?\s+(\d+)/) ||
                              text.match(/staking[:]?\s+(\d+)%/);
-
-    if (!nameMatch && !symbolMatch && !supplyMatch) {
-      elizaLogger.debug("Token parameter extraction failed: insufficient parameters");
-      return null;
-    }
-
-    // Extract the first captured group that isn't undefined
-    const name = (
-      nameMatch?.[1] || 
-      nameMatch?.[2] || 
-      nameMatch?.[3] || 
-      'MyToken'
-    ).trim();
+    */
     
-    const symbol = (
-      symbolMatch?.[1] || 
-      symbolMatch?.[2] || 
-      name.substring(0, 3).toUpperCase()
-    ).trim();
-    
-    const supplyStr = (supplyMatch?.[1] || '1000000').replace(/,/g, '');
-    
-    // Ensure all numeric values are properly parsed
-    let totalSupply: number;
-    try {
-      totalSupply = parseFloat(supplyStr);
-    } catch (e) {
-      totalSupply = 1000000; // Default if parsing fails
-    }
-
-    let decimals: number;
-    try {
-      decimals = parseInt((decimalsMatch?.[1] || '18').trim(), 10);
-    } catch (e) {
-      decimals = 18; // Default if parsing fails
-    }
-
-    let creatorShare: number;
-    try {
-      creatorShare = parseInt((creatorShareMatch?.[1] || '40').trim(), 10);
-    } catch (e) {
-      creatorShare = 40; // Default if parsing fails
-    }
-
-    let stakingShare: number;
-    try {
-      stakingShare = parseInt((stakingShareMatch?.[1] || '40').trim(), 10);
-    } catch (e) {
-      stakingShare = 40; // Default if parsing fails
-    }
+    // Use default values for the parameters that are not extracted from chat
+    const totalSupply = 1000000;  // Default 1 million
+    const decimals = 18;          // Default 18 decimals (standard)
+    const creatorShare = 40;      // Default 40%
+    const stakingShare = 40;      // Default 40%
     
     // Validate and return the token parameters
     return {

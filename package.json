@@ -76,6 +76,7 @@
     "@deepgram/sdk": "^3.9.0",
     "@elizaos-plugins/adapter-sqlite": "workspace:*",
     "@injectivelabs/sdk-ts": "^1.14.33",
+    "@supabase/supabase-js": "^2.49.1",
     "@vitest/eslint-plugin": "1.0.1",
     "amqplib": "0.10.5",
     "bs58": "4.0.0",
