@@ -14,6 +14,8 @@ import { processMetadata, insertApplication } from "./utils/supabase";
 import { Application } from "./interface/Applications";
 import { encodeSwapRoute } from "./utils/tokenUtils";
 
+// Note:Add Plugin "plugins": ["@elizaos-plugins/client-twitter"],
+
 const SHERRY_URL_PREFIX = 'https://app.sherry.social/action?url='
 
 export const createTokenAndMarketAction: Action = {
@@ -73,8 +75,6 @@ export const createTokenAndMarketAction: Action = {
             // Initialize token deployment with extracted name and symbol
             // Other parameters are using default values
             const { name, symbol, totalSupply, decimals, creatorShare, stakingShare } = tokenParams;
-
-            //_callback({ text: `📝 Preparing token with name: ${name}, symbol: ${symbol}, supply: ${totalSupply}` });
 
             try {
 
