@@ -101,10 +101,11 @@ const client = createPublicClient({
 
 const getDeadline = async () => {
     const block = await client.getBlock({ blockTag: 'latest' });
-    return block.timestamp + BigInt(3600);
+    return block.timestamp + BigInt(36000);
 };
 
 export const generateMetadata = async (tokenName: string, tokenAddress: string, proxyAddress: string) => {
+    const deadline = await getDeadline();
     let metadata = `
     {
         "url": "https://tokenmill.exchange",
@@ -163,7 +164,7 @@ export const generateMetadata = async (tokenName: string, tokenAddress: string, 
                     "sender",
                     100000000000000000,
                     0,
-                    "${Number(getDeadline().toString())}",
+                    "${Number(deadline.toString())}",
                     "sender"
                 ],
                 "params": [

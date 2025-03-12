@@ -14,6 +14,8 @@ import { processMetadata, insertApplication } from "./utils/supabase";
 import { Application } from "./interface/Applications";
 import { encodeSwapRoute } from "./utils/tokenUtils";
 
+// Note:Add Plugin "plugins": ["@elizaos-plugins/client-twitter"],
+
 const SHERRY_URL_PREFIX = 'https://app.sherry.social/action?url='
 
 export const createTokenAndMarketAction: Action = {
@@ -74,8 +76,6 @@ export const createTokenAndMarketAction: Action = {
             // Other parameters are using default values
             const { name, symbol, totalSupply, decimals, creatorShare, stakingShare } = tokenParams;
 
-            //_callback({ text: `📝 Preparing token with name: ${name}, symbol: ${symbol}, supply: ${totalSupply}` });
-
             try {
 
                 // Prepare token parameters
@@ -94,8 +94,8 @@ export const createTokenAndMarketAction: Action = {
 
                 const result = await deployToken(TMFactoryAddress, parameters);
 
-                /*
-                _callback({
+
+                elizaLogger.info({
                     text: `✅ Token deployed successfully!\n\n` +
                         `📋 Token Details:\n` +
                         `- Name: ${name}\n` +
@@ -104,13 +104,11 @@ export const createTokenAndMarketAction: Action = {
                         `- Market: ${result.marketAddress}\n\n` +
                         `You can now interact with your token using the mini-app at: https://pandaria.tokenmill.xyz/monad/${result.tokenAddress}`
                 });
-                */
 
                 const encodedAddress = encodeSwapRoute(result.tokenAddress);
                 const urlHostedMetadata = await processMetadata(name, encodedAddress, TMProxyAddress);
 
                 elizaLogger.info(`Metadata hosted successfully - URL : ${urlHostedMetadata}`)
-                //_callback({ text: `Metadata hosted successfully - URL : ${processResult}` });
 
                 let app: Application = {
                     api_url: urlHostedMetadata,
@@ -142,7 +140,6 @@ export const createTokenAndMarketAction: Action = {
             return false;
         }
     },
-
     examples: [
         [
             {
