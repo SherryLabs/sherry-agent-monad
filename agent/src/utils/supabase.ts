@@ -215,4 +215,3 @@ export async function processMetadata(tokenName: string, tokenAddress: string, p
 
     return result.publicUrl;
 }
-
