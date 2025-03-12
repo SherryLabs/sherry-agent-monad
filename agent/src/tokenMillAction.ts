@@ -74,7 +74,7 @@ export const createTokenAndMarketAction: Action = {
             // Other parameters are using default values
             const { name, symbol, totalSupply, decimals, creatorShare, stakingShare } = tokenParams;
 
-            _callback({ text: `📝 Preparing token with name: ${name}, symbol: ${symbol}, supply: ${totalSupply}` });
+            //_callback({ text: `📝 Preparing token with name: ${name}, symbol: ${symbol}, supply: ${totalSupply}` });
 
             try {
 
@@ -94,6 +94,7 @@ export const createTokenAndMarketAction: Action = {
 
                 const result = await deployToken(TMFactoryAddress, parameters);
 
+                /*
                 _callback({
                     text: `✅ Token deployed successfully!\n\n` +
                         `📋 Token Details:\n` +
@@ -103,6 +104,7 @@ export const createTokenAndMarketAction: Action = {
                         `- Market: ${result.marketAddress}\n\n` +
                         `You can now interact with your token using the mini-app at: https://pandaria.tokenmill.xyz/monad/${result.tokenAddress}`
                 });
+                */
 
                 const encodedAddress = encodeSwapRoute(result.tokenAddress);
                 const urlHostedMetadata = await processMetadata(name, encodedAddress, TMProxyAddress);
@@ -123,7 +125,7 @@ export const createTokenAndMarketAction: Action = {
                     updated_at: new Date().toISOString(),
                 }
 
-                const insertedApp = await insertApplication(app);
+                await insertApplication(app);
 
                 _callback({ text: `✅ Here is the sherry link to sell your token : ${SHERRY_URL_PREFIX}${urlHostedMetadata}` })
 

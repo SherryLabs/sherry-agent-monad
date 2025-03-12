@@ -2,6 +2,8 @@ import { elizaLogger } from '@elizaos/core'
 import { createClient } from '@supabase/supabase-js'
 import { Database, Tables, InsertTables, UpdateTables } from './database.types'
 import { Application } from '../interface/Applications'
+import { createPublicClient, http } from 'viem';
+import { monadTestnet } from './monadChain';
 
 const url = process.env.SUPABASE_URL
 const apiKey = process.env.SUPABASE_ANON_KEY
@@ -92,7 +94,15 @@ export async function uploadMetadataAsFile(metadata: string, fileName: string) {
     }
 }
 
-const getDeadline = () => BigInt(Math.floor(Date.now() / 1000) + 3600);
+const client = createPublicClient({
+    chain: monadTestnet,
+    transport: http(process.env.BLOCKCHAIN_RPC_URL),
+});
+
+const getDeadline = async () => {
+    const block = await client.getBlock({ blockTag: 'latest' });
+    return block.timestamp + BigInt(3600);
+};
 
 export const generateMetadata = async (tokenName: string, tokenAddress: string, proxyAddress: string) => {
     let metadata = `
