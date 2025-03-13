@@ -1,7 +1,7 @@
 # Sherry Nomad Agent
 
 ## Overview
-Sherry Nomad Agent is an AI-powered agent for cryptocurrency and blockchain operations on the Monad blockchain. The agent can help users deploy custom ERC-20 tokens using TokenMill and perform other blockchain-related tasks.
+Sheriza AI - Monad Agent is an AI-powered agent for cryptocurrency and blockchain operations on the Monad blockchain. The agent can help users deploy custom ERC-20 tokens using TokenMill and perform other blockchain-related tasks.
 
 ## Features
 
@@ -57,8 +57,8 @@ Example usage:
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/sherry-nomad-agent.git
-cd sherry-nomad-agent
+git clone https://github.com/SherryLabs/sherry-agent-monad
+cd sherry-agent-monad
 ```
 
 2. Install dependencies
@@ -85,3 +85,17 @@ The agent is built on the ElizaOS framework and uses:
 - Token swapping functionality
 - Portfolio management
 - Multi-chain support
+
+## Wormhole Implementation
+
+In this project, we utilized [Wormhole](https://wormhole.com/docs/) to enable cross-chain transactions between the Monad and Avalanche networks. We deployed the [sender](https://github.com/SherryLabs/sherry-contracts/blob/dev/monad-hackathon/contracts/wormhole/SL1MessageSender.sol) contract on Monad, which initiates the transaction, and the [receiver](https://github.com/SherryLabs/sherry-contracts/blob/dev/monad-hackathon/contracts/wormhole/SL1MessageReceiver.sol) contract on Avalanche, which processes the incoming transaction. This setup allows us to seamlessly transfer data and assets across these two blockchain ecosystems.
+You can find the deployed sender contract on Monad [here](https://github.com/SherryLabs/sherry-contracts/blob/dev/monad-hackathon/contracts/wormhole/SL1MessageSender.sol). The contract address is also available on the [Monad explorer](https://testnet.monadexplorer.com/address/0xa3CA6021b432a88EEFb5b53B31833e19195b4ecB). This implementation demonstrates how Wormhole can be leveraged for efficient and secure cross-chain communication. Further details about the contract deployment and transaction flow can be explored in the provided links.
+
+
+## Privy Implementation
+
+For this hackathon project, we integrated Privy to enhance user authentication and wallet management. Our application, named [Sherry Playground](https://app.sherry.social/home), leverages Privy to provide a streamlined and secure user experience. You can access and test the application here: [Sherry Playground](https://app.sherry.social/home).
+
+Currently, Sherry Playground is in the testing phase, and we are actively working on integrating server wallets to expand its functionality. This feature will allow users to manage their wallets directly through the application, improving accessibility and usability. Stay tuned for updates as we continue to refine and enhance this integration.
+
+
